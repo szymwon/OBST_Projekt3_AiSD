@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
+from turtledemo.clock import jump
 
 from binarytree import Node
-
 
 class treeNode:
     def __init__(self, itemName, frequency):
@@ -53,18 +53,19 @@ class steam_market:
             self.wholeList.append((self.itemNames[i], self.frequencies[i]))
         return self.wholeList
 
-
     def basicBinaryTree(self):
         """Method for crating and printing basic binary tree."""
         if self.listLength == 0:
             return None
 
         def balancedTree(itemsList):
-            middleItemIndex = len(itemsList) // 2
+            if len(itemsList) == 0:
+                return None
 
+            middleItemIndex = len(itemsList) // 2
             node = treeNode(itemsList[middleItemIndex][0],itemsList[middleItemIndex][1])
-            node.left(balancedTree(itemsList[:middleItemIndex]))
-            node.right(balancedTree(itemsList[middleItemIndex + 1:]))
+            node.left = balancedTree(itemsList[:middleItemIndex])
+            node.right = balancedTree(itemsList[middleItemIndex + 1:])
 
             return node
         if len(self.wholeList) == 0:
@@ -74,9 +75,39 @@ class steam_market:
 
 
 
-    def searchBinaryTree(self):
-        """Method for crating and printing optimized binary tree."""
-        pass
+    def searchPhrase(self,phrase):
+        """Universal method for searching an item in tree by phrase. Method returns full phrase and steps needed for search."""
+        if self.basicTreeRoot == None:
+            return None, 0
+
+        found = []
+        searched_phrase = phrase.lower()
+        steps = [0]
+
+        def inOrderTraversal(node):
+
+            if node is None:
+                return
+            steps[0] += 1
+            inOrderTraversal(node.left)
+            if searched_phrase in node.itemName.lower():
+                found.append((node.itemName, node.frequency))
+            inOrderTraversal(node.right)
+
+        inOrderTraversal(self.basicTreeRoot)
+
+        if not found:
+            print("Nie znaleziono danej rzeczy!")
+        else:
+            print("Znalezione itemy: ")
+
+            print("-----------------------------------")
+            for item in found:
+                print(f"Nazwa: {item[0]}")
+                print(f"Częstotliwość wyszukiwania: {item[1]}",end="\n-----------------------------------\n")
+            # print(str(item[0] for item in found)
+            print(f"Liczba kroków: {steps}")
+        return found, steps[0]
 
 
     def optimizedBinaryTree(self):
@@ -101,7 +132,7 @@ class steam_market:
 
         # Tworzymy węzeł z biblioteki. Wrzucamy do niego nazwę i częstotliwość.
         # (W starszych wersjach biblioteki może być wymagana sama liczba, wtedy wpisz tu tylko current_node.frequency)
-        lib_node = Node(f"{current_node.key} ({current_node.frequency})")
+        lib_node = Node(f"{current_node.itemName} ({current_node.frequency})")
 
         # Rekurencyjnie tłumaczymy lewą i prawą gałąź
         lib_node.left = self._convert_to_library_node(current_node.left)
@@ -111,14 +142,22 @@ class steam_market:
 
     def drawTreeWithLibrary(self):
         """Wyświetla główne drzewo za pomocą biblioteki binarytree."""
-        if self.basic_root is None:
+        if self.basicTreeRoot is None:
             print("Drzewo jest puste!")
             return
 
-        drzewo_do_druku = self._convert_to_library_node(self.basic_root)
+        drzewo_do_druku = self._convert_to_library_node(self.basicTreeRoot)
         print(drzewo_do_druku)
 
 
 market = steam_market()
 market.loadFile("items.csv")
+# Budujemy nasze drzewo
+market.basicBinaryTree()
+
+# Wyświetlamy je za pomocą biblioteki binarytree
+# market.drawTreeWithLibrary()
+skin = "fade"
+market.searchPhrase(skin)
+# print(market.searchPhrase(skin))
 # print(market.getItemsList())
