@@ -75,38 +75,87 @@ class steam_market:
 
 
 
-    def searchPhrase(self,phrase):
-        """Universal method for searching an item in tree by phrase. Method returns full phrase and steps needed for search."""
-        if self.basicTreeRoot == None:
-            return None, 0
+    # def searchPhrase(self,phrase):
+    #     """Universal method for searching an item in tree by phrase. Method returns full phrase and steps needed for search."""
+    #     if self.basicTreeRoot == None:
+    #         return None, 0
+    #
+    #     found = []
+    #     searched_phrase = phrase.lower()
+    #     steps = [0]
+    #
+    #     def inOrderTraversal(node):
+    #
+    #         if node is None:
+    #             return
+    #         steps[0] += 1
+    #         inOrderTraversal(node.left)
+    #         if searched_phrase in node.itemName.lower():
+    #             found.append((node.itemName, node.frequency))
+    #         inOrderTraversal(node.right)
+    #
+    #     inOrderTraversal(self.basicTreeRoot)
+    #
+    #     if not found:
+    #         print("Nie znaleziono danej rzeczy!")
+    #     else:
+    #         print("Znalezione itemy: ")
+    #
+    #         print("-----------------------------------")
+    #         for item in found:
+    #             print(f"Nazwa: {item[0]}")
+    #             print(f"Częstotliwość wyszukiwania: {item[1]}",end="\n-----------------------------------\n")
+    #         # print(str(item[0] for item in found)
+    #         print(f"Liczba kroków: {steps}")
+    #     return found, steps[0]
+    def searchPhrase(self, phrase):
+        """Wyszukuje pierwszy pasujący skin i natychmiast przerywa działanie drzewa."""
+        if self.basicTreeRoot is None:
+            return [], 0
 
         found = []
         searched_phrase = phrase.lower()
         steps = [0]
 
-        def inOrderTraversal(node):
+        print(f"\n[SYSTEM] Szukam TYLKO PIERWSZEGO dopasowania dla frazy: '{phrase}'")
+        print("-" * 55)
 
+        def inOrderTraversal(node):
             if node is None:
-                return
+                return False # Ściana. Zwracamy False, czyli "szukaj dalej"
+
+            # KROK A: Idziemy w lewo.
+            # Jeśli lewa gałąź zwróci True (bo znalazła), my też natychmiast zwracamy True i przerywamy!
+            if inOrderTraversal(node.left):
+                return True
+
+            # KROK B: Sprawdzamy obecny węzeł
             steps[0] += 1
-            inOrderTraversal(node.left)
+            obecny_krok = steps[0]
+            print(f" Krok {obecny_krok}: Sprawdzam węzeł -> {node.itemName}")
+
             if searched_phrase in node.itemName.lower():
-                found.append((node.itemName, node.frequency))
-            inOrderTraversal(node.right)
+                print(f"  >>> SUKCES! Znalazłem '{node.itemName}'. PRZERYWAM CAŁY PROCES!")
+                found.append((node.itemName, node.frequency, obecny_krok))
+                return True
+
+            if inOrderTraversal(node.right):
+                return True
+            return False
 
         inOrderTraversal(self.basicTreeRoot)
 
+        print("-" * 55)
+        print("\n--- WYNIKI WYSZUKIWANIA ---")
         if not found:
-            print("Nie znaleziono danej rzeczy!")
+            print("Brak wyników dopasowania.")
         else:
-            print("Znalezione itemy: ")
+            item = found[0]
+            print(f"Nazwa skina: {item[0]}")
+            print(f"Popularność wyszukiwania: {item[1]}")
+            print(f"Zlokalizowano i przerwano w kroku nr: {item[2]}")
+            print("---------------------------")
 
-            print("-----------------------------------")
-            for item in found:
-                print(f"Nazwa: {item[0]}")
-                print(f"Częstotliwość wyszukiwania: {item[1]}",end="\n-----------------------------------\n")
-            # print(str(item[0] for item in found)
-            print(f"Liczba kroków: {steps}")
         return found, steps[0]
 
 
@@ -157,7 +206,7 @@ market.basicBinaryTree()
 
 # Wyświetlamy je za pomocą biblioteki binarytree
 # market.drawTreeWithLibrary()
-skin = "fade"
+skin = "f"
 market.searchPhrase(skin)
 # print(market.searchPhrase(skin))
 # print(market.getItemsList())
