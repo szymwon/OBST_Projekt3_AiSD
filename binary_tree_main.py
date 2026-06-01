@@ -2,18 +2,25 @@
 from steam_market_classes import *
 
 
+#tworzenie obiektu
 market = steam_market()
+#ladowanie pliku do obiektu
 market.loadFile("items_copy.csv")
-# Budujemy nasze drzewo
-market.basicBinaryTree()
 
-# Wyświetlamy je za pomocą biblioteki binarytree
-# market.drawTreeWithLibrary()
-skin = "fade"
+#tworzenie drzew: binarnego i zwyklego
+# print()
+market.basicBinaryTree()
 market.optimizedBinaryTree()
-# market.searchPhrase(skin)
-# print(market.searchOptimizedTree("fade"))
+
+#wyswietlanie drzew
 market.drawBasicTree()
 market.drawOptimizedTree()
-# print(market.searchPhrase(skin))
+
+#wyszukiwanie przedmiotu
+itemName = str(input("Podaj nazwę przedmiotu który chcesz wyszukać: "))
+# itemName = "fade"
+
+market.searchPhrase(itemName)
+# print(market.searchOptimizedTree(itemName))
+
 # print(market.getItemsList())
