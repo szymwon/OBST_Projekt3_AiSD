@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 from binarytree import Node
 
@@ -39,14 +38,14 @@ class steam_market:
                 self.listLength = len(self.itemNames)
 
         except Exception:
-            print(f"Błąd wczytania pliku \"{fileName}\"")
+            print(f"B??d wczytania pliku \"{fileName}\"")
             raise
 
 
     def getItemsList(self):
         """Returns list of items and frequencies"""
         if self.listLength == 0:
-            fileName = str(input("Wprowadź nazwę pliku z danymi: "))
+            fileName = str(input("Wprowad? nazw? pliku z danymi: "))
             self.loadFile(fileName)
         for i in range(len(self.itemNames)):
             self.wholeList.append((self.itemNames[i], self.frequencies[i]))
@@ -73,42 +72,6 @@ class steam_market:
         self.basicTreeRoot = balancedTree(self.wholeList)
 
 
-
-    # def searchPhrase(self,phrase):
-    #     """Universal method for searching an item in tree by phrase. Method returns full phrase and steps needed for search."""
-    #     if self.basicTreeRoot == None:
-    #         return None, 0
-    #
-    #     found = []
-    #     searched_phrase = phrase.lower()
-    #     steps = [0]
-    #
-    #     def inOrderTraversal(node):
-    #
-    #         if node is None:
-    #             return
-    #         steps[0] += 1
-    #         inOrderTraversal(node.left)
-    #         if searched_phrase in node.itemName.lower():
-    #             found.append((node.itemName, node.frequency))
-    #         inOrderTraversal(node.right)
-    #
-    #     inOrderTraversal(self.basicTreeRoot)
-    #
-    #     if not found:
-    #         print("Nie znaleziono danej rzeczy!")
-    #     else:
-    #         print("Znalezione itemy: ")
-    #
-    #         print("-----------------------------------")
-    #         for item in found:
-    #             print(f"Nazwa: {item[0]}")
-    #             print(f"Częstotliwość wyszukiwania: {item[1]}",end="\n-----------------------------------\n")
-    #         # print(str(item[0] for item in found)
-    #         print(f"Liczba kroków: {steps}")
-    #     return found, steps[0]
-
-
     def searchPhrase(self, phrase):
         """Method search for a first item matching search phrase and returns steps needed to reach item."""
         if self.basicTreeRoot is None:
@@ -123,20 +86,20 @@ class steam_market:
 
         def inOrderTraversal(node):
             if node is None:
-                return False # Ściana. Zwracamy False, czyli "szukaj dalej"
+                return False # ?ciana. Zwracamy False, czyli "szukaj dalej"
 
             # KROK A: Idziemy w lewo.
-            # Jeśli lewa gałąź zwróci True (bo znalazła), my też natychmiast zwracamy True i przerywamy!
+            # Je?li lewa ga??? zwr?ci True (bo znalaz?a), my te? natychmiast zwracamy True i przerywamy!
             if inOrderTraversal(node.left):
                 return True
 
-            # KROK B: Sprawdzamy obecny węzeł
+            # KROK B: Sprawdzamy obecny w?ze?
             steps[0] += 1
             obecny_krok = steps[0]
-            print(f" Krok {obecny_krok}: Sprawdzam węzeł -> {node.itemName}")
+            print(f" Krok {obecny_krok}: Sprawdzam w?ze? -> {node.itemName}")
 
             if searched_phrase in node.itemName.lower():
-                print(f"  >>> SUKCES! Znalazłem '{node.itemName}'. PRZERYWAM CAŁY PROCES!")
+                print(f"  >>> SUKCES! Znalaz?em '{node.itemName}'. PRZERYWAM CA?Y PROCES!")
                 found.append((node.itemName, node.frequency, obecny_krok))
                 return True
 
@@ -149,11 +112,11 @@ class steam_market:
         print("-" * 55)
         print("\n--- WYNIKI WYSZUKIWANIA ---")
         if not found:
-            print("Brak wyników dopasowania.")
+            print("Brak wynik?w dopasowania.")
         else:
             item = found[0]
             print(f"Nazwa skina: {item[0]}")
-            print(f"Popularność wyszukiwania: {item[1]}")
+            print(f"Popularno?? wyszukiwania: {item[1]}")
             print(f"Zlokalizowano i przerwano w kroku nr: {item[2]}")
             print("---------------------------")
 
@@ -162,7 +125,7 @@ class steam_market:
 
     def optimizedBinaryTree(self):
         """Method for searching specific value in binary tree."""
-        """Metoda budująca optymalne drzewo poszukiwań (OBST) za pomocą Programowania Dynamicznego."""
+        """Metoda buduj?ca optymalne drzewo poszukiwa? (OBST) za pomoc? Programowania Dynamicznego."""
         n = self.listLength
         if n == 0:
             return
@@ -171,28 +134,28 @@ class steam_market:
         koszty = [[0] * n for _ in range(n)]
         korzenie = [[0] * n for _ in range(n)]
 
-        # 2. Baza DP: Wypełniamy przekątną (drzewa 1-elementowe)
+        # 2. Baza DP: Wype?niamy przek?tn? (drzewa 1-elementowe)
         for i in range(n):
             koszty[i][i] = self.frequencies[i]
             korzenie[i][i] = i
 
-        # 3. Główny algorytm Programowania Dynamicznego (budujemy coraz szersze poddrzewa)
-        for dlugosc in range(2, n + 1):          # 'dlugosc' to liczba elementów w poddrzewie
-            for i in range(n - dlugosc + 1):     # 'i' to indeks początkowy
-                j = i + dlugosc - 1              # 'j' to indeks końcowy
-                koszty[i][j] = float('inf')      # Ustawiamy nieskończoność jako koszt startowy
+        # 3. G??wny algorytm Programowania Dynamicznego (budujemy coraz szersze poddrzewa)
+        for dlugosc in range(2, n + 1):          # 'dlugosc' to liczba element?w w poddrzewie
+            for i in range(n - dlugosc + 1):     # 'i' to indeks pocz?tkowy
+                j = i + dlugosc - 1              # 'j' to indeks ko?cowy
+                koszty[i][j] = float('inf')      # Ustawiamy niesko?czono?? jako koszt startowy
 
                 suma_czestotliwosci = sum(self.frequencies[i:j + 1])
 
-                # Szukamy, który węzeł 'r' sprawdzi się najlepiej jako korzeń dla tego przedziału
+                # Szukamy, kt?ry w?ze? 'r' sprawdzi si? najlepiej jako korze? dla tego przedzia?u
                 for r in range(i, j + 1):
-                    # Zabezpieczenie przed wyjściem poza tablicę dla lewego i prawego dziecka
+                    # Zabezpieczenie przed wyj?ciem poza tablic? dla lewego i prawego dziecka
                     koszt_lewy = koszty[i][r - 1] if r > i else 0
                     koszt_prawy = koszty[r + 1][j] if r < j else 0
 
                     calkowity_koszt = koszt_lewy + koszt_prawy + suma_czestotliwosci
 
-                    # Zapisujemy, jeśli znaleźliśmy lepszego kandydata na korzeń
+                    # Zapisujemy, je?li znale?li?my lepszego kandydata na korze?
                     if calkowity_koszt < koszty[i][j]:
                         koszty[i][j] = calkowity_koszt
                         korzenie[i][j] = r
@@ -222,11 +185,11 @@ class steam_market:
 
         while obecny is not None:
             kroki += 1
-            # Jeśli znaleźliśmy dokładny strzał, kończymy
+            # Je?li znale?li?my dok?adny strza?, ko?czymy
             if obecny.itemName == item_name:
                 return obecny, kroki
 
-            # Własność BST: Odrzucamy połowę drzewa przy każdym kroku!
+            # W?asno?? BST: Odrzucamy po?ow? drzewa przy ka?dym kroku!
             elif item_name < obecny.itemName:
                 obecny = obecny.left
             else:
@@ -241,22 +204,22 @@ class steam_market:
         pass
 
     def _convert_to_library_node(self, current_node):
-        """Konwertuje nasze węzły na obiekty Node z biblioteki binarytree."""
+        """Konwertuje nasze w?z?y na obiekty Node z biblioteki binarytree."""
         if current_node is None:
             return None
 
-        # Tworzymy węzeł z biblioteki. Wrzucamy do niego nazwę i częstotliwość.
-        # (W starszych wersjach biblioteki może być wymagana sama liczba, wtedy wpisz tu tylko current_node.frequency)
+        # Tworzymy w?ze? z biblioteki. Wrzucamy do niego nazw? i cz?stotliwo??.
+        # (W starszych wersjach biblioteki mo?e by? wymagana sama liczba, wtedy wpisz tu tylko current_node.frequency)
         lib_node = Node(f"{current_node.itemName} ({current_node.frequency})")
 
-        # Rekurencyjnie tłumaczymy lewą i prawą gałąź
+        # Rekurencyjnie t?umaczymy lew? i praw? ga???
         lib_node.left = self._convert_to_library_node(current_node.left)
         lib_node.right = self._convert_to_library_node(current_node.right)
 
         return lib_node
 
     def drawBasicTree(self):
-        """Wyświetla główne drzewo za pomocą biblioteki binarytree."""
+        """Wy?wietla g??wne drzewo za pomoc? biblioteki binarytree."""
         if self.basicTreeRoot is None:
             print("Drzewo jest puste!")
             return
@@ -267,32 +230,15 @@ class steam_market:
         print("-" * 52)
 
     def drawOptimizedTree(self):
-        """Wyświetla zoptymalizowane drzewo (OBST) za pomocą biblioteki binarytree."""
+        """Wy?wietla zoptymalizowane drzewo (OBST) za pomoc? biblioteki binarytree."""
         if self.optimizedTreeRoot is None:
             print("Drzewo jest puste!")
             return
 
         print("\nWIZUALIZACJA ZOPTYMALIZOWANEGO DRZEWA (OBST):")
 
-        # Używamy tego samego tłumacza, ale przekazujemy mu KORZEŃ OBST!
+        # U?ywamy tego samego t?umacza, ale przekazujemy mu KORZE? OBST!
         convertedTree = self._convert_to_library_node(self.optimizedTreeRoot)
 
         print(convertedTree)
         print("-" * 52)
-
-
-market = steam_market()
-market.loadFile("items_copy.csv")
-# Budujemy nasze drzewo
-market.basicBinaryTree()
-
-# Wyświetlamy je za pomocą biblioteki binarytree
-# market.drawTreeWithLibrary()
-skin = "fade"
-market.optimizedBinaryTree()
-# market.searchPhrase(skin)
-# print(market.searchOptimizedTree("fade"))
-market.drawBasicTree()
-market.drawOptimizedTree()
-# print(market.searchPhrase(skin))
-# print(market.getItemsList())
