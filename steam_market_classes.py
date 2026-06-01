@@ -73,55 +73,55 @@ class steam_market:
 
 
     def searchPhrase(self, phrase):
-        """Method search for a first item matching search phrase and returns steps needed to reach item."""
+        """Metoda wykorzystująca wyszukiwanie binarne w strukturze drzewa BST."""
         if self.basicTreeRoot is None:
-            return [], 0
+            print("Drzewo podstawowe jest puste!")
+            return [], 0, []
 
+        searched_phrase = phrase
+        obecny = self.basicTreeRoot
+        kroki = 0
         found = []
-        searched_phrase = phrase.lower()
-        steps = [0]
+        path = []  # <--- Dodana lista na odwiedzane węzły (potrzebna do obrazka PNG)
 
-        print(f"\n[SYSTEM] Szukam TYLKO PIERWSZEGO dopasowania dla frazy: '{phrase}'")
+        print(f"\n[SYSTEM] Wyszukiwanie binarne dla frazy: '{phrase}'")
         print("-" * 55)
 
-        def inOrderTraversal(node):
-            if node is None:
-                return False # Ściana. Zwracamy False, czyli "szukaj dalej"
+        while obecny is not None:
+            kroki += 1
+            path.append(obecny)  # <--- Zapisujemy węzeł do ścieżki
+            print(f" Krok {kroki}: Sprawdzam węzeł -> {obecny.itemName}")
 
-            # KROK A: Idziemy w lewo.
-            # Jeśli lewa gałąź zwróci True (bo znalazła), my też natychmiast zwracamy True i przerywamy!
-            if inOrderTraversal(node.left):
-                return True
+            # 1. Dokładne dopasowanie węzła i wpisanej frazy
+            if searched_phrase == obecny.itemName:
+                print(f"  >>> SUKCES! Znaleziono '{obecny.itemName}'.")
+                found.append((obecny.itemName, obecny.frequency, kroki))
+                break
 
-            # KROK B: Sprawdzamy obecny węzeł
-            steps[0] += 1
-            obecny_krok = steps[0]
-            print(f" Krok {obecny_krok}: Sprawdzam węzeł -> {node.itemName}")
+            # 2. Fraza jest mniejsza alfabetycznie -> skręcamy w lewo
+            elif searched_phrase < obecny.itemName:
+                print("  --- Fraza mniejsza alfabetycznie. Skręcam w LEWO.")
+                obecny = obecny.left
 
-            if searched_phrase in node.itemName.lower():
-                print(f"  >>> SUKCES! Znalazłem '{node.itemName}'. PRZERYWAM CAŁY PROCES!")
-                found.append((node.itemName, node.frequency, obecny_krok))
-                return True
-
-            if inOrderTraversal(node.right):
-                return True
-            return False
-
-        inOrderTraversal(self.basicTreeRoot)
+            # 3. Fraza jest większa alfabetycznie -> skręcamy w prawo
+            else:
+                print("  --- Fraza większa alfabetycznie. Skręcam w PRAWO.")
+                obecny = obecny.right
 
         print("-" * 55)
         print("\n--- WYNIKI WYSZUKIWANIA ---")
         if not found:
             print("Brak wyników dopasowania.")
+            print(f"Zakończono poszukiwania po {kroki} krokach.")
         else:
             item = found[0]
             print(f"Nazwa skina: {item[0]}")
             print(f"Popularność wyszukiwania: {item[1]}")
-            print(f"Zlokalizowano i przerwano w kroku nr: {item[2]}")
+            print(f"Zlokalizowano w kroku nr: {item[2]}")
             print("---------------------------")
 
-        return found, steps[0]
-
+        # <--- Zwracamy dokładnie 3 wartości, o które prosi plik główny
+        return found, kroki, path
 
     def optimizedBinaryTree(self):
         """Metoda budująca optymalne drzewo poszukiwań (OBST) za pomocą Programowania Dynamicznego."""
@@ -186,7 +186,7 @@ class steam_market:
 
             # 1. Znalazł dokładnie to, czego szukał
             if obecny.itemName == item_name:
-                print(f"  >>> BINGO! Znalazłem '{obecny.itemName}'. Koniec szukania!")
+                print(f"  >>> SUKCES! Znaleziono '{obecny.itemName}'.")
                 print("-" * 55)
                 print("\n--- WYNIKI WYSZUKIWANIA OBST ---")
                 print(f"Nazwa skina: {obecny.itemName}")
@@ -197,12 +197,12 @@ class steam_market:
 
             # 2. Szukana nazwa jest mniejsza alfabetycznie -> skręcamy w lewo
             elif item_name < obecny.itemName:
-                print("  --- Skin jest mniejszy alfabetycznie. Odrzucam prawą stronę, skręcam w LEWO.")
+                print("  --- Fraza mniejsza alfabetycznie. Skręcam w LEWO.")
                 obecny = obecny.left
 
             # 3. Szukana nazwa jest większa alfabetycznie -> skręcamy w prawo
             else:
-                print("  --- Skin jest większy alfabetycznie. Odrzucam lewą stronę, skręcam w PRAWO.")
+                print("  --- Fraza jest większa alfabetycznie. Skręcam w PRAWO.")
                 obecny = obecny.right
 
         # Jeśli pętla się skończy i nic nie znajdzie
@@ -331,7 +331,7 @@ class steam_market:
                 node_color = highlight_color
                 edge_color = "#333333"
                 size = 2400
-                text_color = "white"
+                text_color = "black"
             else:
                 node_color = "#cfe8ff"
                 edge_color = "#2b6cb0"
@@ -388,10 +388,11 @@ class steam_market:
                 curr = curr.right
         return path, False
 
-    def exportBasicTreeToPng(self, file_path="basic_tree.png", item_name=None):
-        """Eksportuje główne drzewo do pliku PNG. Jeśli podano item_name, podświetla ścieżkę wyszukiwania na czerwono."""
-        highlight = None
-        if item_name is not None:
+    def exportBasicTreeToPng(self, file_path="basic_tree.png", item_name=None, highlight_path_ids=None):
+        """Eksportuje główne drzewo do pliku PNG. 
+        Jeśli podano highlight_path_ids (lista węzłów), podświetla ścieżkę na czerwono."""
+        highlight = highlight_path_ids
+        if highlight is None and item_name is not None:
             path, found = self.get_search_path_basic(item_name)
             highlight = path
         self._export_tree_to_png(self.basicTreeRoot, file_path, "Basic binary tree", highlight_path_ids=highlight, highlight_color="#ff6666")
