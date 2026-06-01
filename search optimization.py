@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from turtledemo.clock import jump
 
 from binarytree import Node
 
@@ -108,8 +107,10 @@ class steam_market:
     #         # print(str(item[0] for item in found)
     #         print(f"Liczba kroków: {steps}")
     #     return found, steps[0]
+
+
     def searchPhrase(self, phrase):
-        """Wyszukuje pierwszy pasujący skin i natychmiast przerywa działanie drzewa."""
+        """Method search for a first item matching search phrase and returns steps needed to reach item."""
         if self.basicTreeRoot is None:
             return [], 0
 
@@ -161,13 +162,78 @@ class steam_market:
 
     def optimizedBinaryTree(self):
         """Method for searching specific value in binary tree."""
-        pass
+        """Metoda budująca optymalne drzewo poszukiwań (OBST) za pomocą Programowania Dynamicznego."""
+        n = self.listLength
+        if n == 0:
+            return
+
+        # 1. Tworzymy puste macierze na koszty (C) i korzenie (R)
+        koszty = [[0] * n for _ in range(n)]
+        korzenie = [[0] * n for _ in range(n)]
+
+        # 2. Baza DP: Wypełniamy przekątną (drzewa 1-elementowe)
+        for i in range(n):
+            koszty[i][i] = self.frequencies[i]
+            korzenie[i][i] = i
+
+        # 3. Główny algorytm Programowania Dynamicznego (budujemy coraz szersze poddrzewa)
+        for dlugosc in range(2, n + 1):          # 'dlugosc' to liczba elementów w poddrzewie
+            for i in range(n - dlugosc + 1):     # 'i' to indeks początkowy
+                j = i + dlugosc - 1              # 'j' to indeks końcowy
+                koszty[i][j] = float('inf')      # Ustawiamy nieskończoność jako koszt startowy
+
+                suma_czestotliwosci = sum(self.frequencies[i:j + 1])
+
+                # Szukamy, który węzeł 'r' sprawdzi się najlepiej jako korzeń dla tego przedziału
+                for r in range(i, j + 1):
+                    # Zabezpieczenie przed wyjściem poza tablicę dla lewego i prawego dziecka
+                    koszt_lewy = koszty[i][r - 1] if r > i else 0
+                    koszt_prawy = koszty[r + 1][j] if r < j else 0
+
+                    calkowity_koszt = koszt_lewy + koszt_prawy + suma_czestotliwosci
+
+                    # Zapisujemy, jeśli znaleźliśmy lepszego kandydata na korzeń
+                    if calkowity_koszt < koszty[i][j]:
+                        koszty[i][j] = calkowity_koszt
+                        korzenie[i][j] = r
+
+        # 4. Rekurencyjna budowa fizycznego drzewa na podstawie macierzy korzeni (R)
+        def zbuduj_drzewo(i, j):
+            if i > j:
+                return None
+
+            # Odczytujemy indeks najlepszego korzenia z macierzy
+            r = korzenie[i][j]
+            wezel = treeNode(self.itemNames[r], self.frequencies[r])
+
+            # Budujemy lewe i prawe poddrzewo
+            wezel.left = zbuduj_drzewo(i, r - 1)
+            wezel.right = zbuduj_drzewo(r + 1, j)
+
+            return wezel
+
+        self.optimizedTreeRoot = zbuduj_drzewo(0, n - 1)
 
 
-    def searchOptimizedTree(self):
+    def searchOptimizedTree(self, item_name):
         """Method for searching specific item in optimized binary tree."""
+        obecny = self.optimizedTreeRoot
+        kroki = 0
 
-        pass
+        while obecny is not None:
+            kroki += 1
+            # Jeśli znaleźliśmy dokładny strzał, kończymy
+            if obecny.itemName == item_name:
+                return obecny, kroki
+
+            # Własność BST: Odrzucamy połowę drzewa przy każdym kroku!
+            elif item_name < obecny.itemName:
+                obecny = obecny.left
+            else:
+                obecny = obecny.right
+
+        # Skina nie ma w bazie
+        return None, kroki
 
 
     def costDifferenceCalculator(self):
@@ -189,24 +255,44 @@ class steam_market:
 
         return lib_node
 
-    def drawTreeWithLibrary(self):
+    def drawBasicTree(self):
         """Wyświetla główne drzewo za pomocą biblioteki binarytree."""
         if self.basicTreeRoot is None:
             print("Drzewo jest puste!")
             return
 
-        drzewo_do_druku = self._convert_to_library_node(self.basicTreeRoot)
-        print(drzewo_do_druku)
+        print("\nWIZUALIZACJA DRZEWA BINARNEGO (BST):")
+        convertedTree = self._convert_to_library_node(self.basicTreeRoot)
+        print(convertedTree )
+        print("-" * 52)
+
+    def drawOptimizedTree(self):
+        """Wyświetla zoptymalizowane drzewo (OBST) za pomocą biblioteki binarytree."""
+        if self.optimizedTreeRoot is None:
+            print("Drzewo jest puste!")
+            return
+
+        print("\nWIZUALIZACJA ZOPTYMALIZOWANEGO DRZEWA (OBST):")
+
+        # Używamy tego samego tłumacza, ale przekazujemy mu KORZEŃ OBST!
+        convertedTree = self._convert_to_library_node(self.optimizedTreeRoot)
+
+        print(convertedTree)
+        print("-" * 52)
 
 
 market = steam_market()
-market.loadFile("items.csv")
+market.loadFile("items_copy.csv")
 # Budujemy nasze drzewo
 market.basicBinaryTree()
 
 # Wyświetlamy je za pomocą biblioteki binarytree
 # market.drawTreeWithLibrary()
-skin = "f"
-market.searchPhrase(skin)
+skin = "fade"
+market.optimizedBinaryTree()
+# market.searchPhrase(skin)
+# print(market.searchOptimizedTree("fade"))
+market.drawBasicTree()
+market.drawOptimizedTree()
 # print(market.searchPhrase(skin))
 # print(market.getItemsList())

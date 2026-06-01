@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 # 14. Optymalne drzewa poszukiwań
 
