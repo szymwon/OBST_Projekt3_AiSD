@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from steam_market_classes import *
+# from matlibplot import *
 
 
 #tworzenie obiektu
@@ -21,6 +22,11 @@ itemName = str(input("Podaj nazwę przedmiotu który chcesz wyszukać: "))
 # itemName = "fade"
 
 market.searchPhrase(itemName)
+
+#eksport drzew do PNG
+market.exportBasicTreeToPng("basic_tree.png")
+market.exportOptimizedTreeToPng("optimized_tree.png")
+print("Drzewa wyeksportowane do PNG!")
 # print(market.searchOptimizedTree(itemName))
 
 # print(market.getItemsList())

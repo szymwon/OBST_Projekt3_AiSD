@@ -242,3 +242,91 @@ class steam_market:
 
         print(convertedTree)
         print("-" * 52)
+
+    def _export_tree_to_png(self, root, file_path, title):
+        """Zapisuje drzewo jako obraz PNG używając matplotlib."""
+        if root is None:
+            raise ValueError("Drzewo jest puste!")
+
+        try:
+            import matplotlib.pyplot as plt
+        except ImportError as exc:
+            raise ImportError(
+                "Do eksportu PNG potrzebny jest pakiet matplotlib. "
+                "Zainstaluj go poleceniem: pip install matplotlib"
+            ) from exc
+
+        positions = {}
+        labels = {}
+        x_counter = [0]
+
+        def assign_positions(node, depth=0):
+            if node is None:
+                return
+
+            assign_positions(node.left, depth + 1)
+            positions[id(node)] = (x_counter[0], -depth)
+            labels[id(node)] = f"{node.itemName}\n({node.frequency})"
+            x_counter[0] += 1
+            assign_positions(node.right, depth + 1)
+
+        def draw_edges(ax, node):
+            if node is None:
+                return
+
+            x, y = positions[id(node)]
+            for child in (node.left, node.right):
+                if child is None:
+                    continue
+                child_x, child_y = positions[id(child)]
+                ax.plot([x, child_x], [y, child_y], color="#666666", linewidth=1.2, zorder=1)
+                draw_edges(ax, child)
+
+        def draw_nodes(ax, node):
+            if node is None:
+                return
+
+            x, y = positions[id(node)]
+            ax.scatter([x], [y], s=1800, color="#cfe8ff", edgecolors="#2b6cb0", linewidths=1.5, zorder=2)
+            ax.text(
+                x,
+                y,
+                labels[id(node)],
+                ha="center",
+                va="center",
+                fontsize=9,
+                zorder=3,
+            )
+            draw_nodes(ax, node.left)
+            draw_nodes(ax, node.right)
+
+        assign_positions(root)
+
+        height = self._tree_height(root)
+        width = max(6, x_counter[0] * 1.2)
+        fig, ax = plt.subplots(figsize=(width, max(4, height * 1.6)))
+        ax.set_title(title)
+        ax.axis("off")
+
+        draw_edges(ax, root)
+        draw_nodes(ax, root)
+
+        ax.relim()
+        ax.autoscale_view()
+        ax.margins(x=0.15, y=0.2)
+        fig.savefig(file_path, dpi=200, bbox_inches="tight")
+        plt.close(fig)
+
+    def _tree_height(self, node):
+        """Zwraca wysokość drzewa."""
+        if node is None:
+            return 0
+        return 1 + max(self._tree_height(node.left), self._tree_height(node.right))
+
+    def exportBasicTreeToPng(self, file_path="basic_tree.png"):
+        """Eksportuje główne drzewo do pliku PNG."""
+        self._export_tree_to_png(self.basicTreeRoot, file_path, "Basic binary tree")
+
+    def exportOptimizedTreeToPng(self, file_path="optimized_tree.png"):
+        """Eksportuje zoptymalizowane drzewo do pliku PNG."""
+        self._export_tree_to_png(self.optimizedTreeRoot, file_path, "Optimized binary tree")
