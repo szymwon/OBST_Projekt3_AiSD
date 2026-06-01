@@ -124,79 +124,91 @@ class steam_market:
 
 
     def optimizedBinaryTree(self):
-        """Method for searching specific value in binary tree."""
+        """Metoda budująca optymalne drzewo poszukiwań (OBST) za pomocą Programowania Dynamicznego."""
         n = self.listLength
         if n == 0:
             return
 
-        # 1. Tworzymy puste macierze na costs (C) i roots (R)
-        costs = [[0] * n for _ in range(n)]
-        roots = [[0] * n for _ in range(n)]
+        # 1. Tworzymy puste macierze na koszty (C) i korzenie (R)
+        koszty = [[0] * n for _ in range(n)]
+        korzenie = [[0] * n for _ in range(n)]
 
         # 2. Baza DP: Wypełniamy przekątną (drzewa 1-elementowe)
         for i in range(n):
-            costs[i][i] = self.frequencies[i]
-            roots[i][i] = i
+            koszty[i][i] = self.frequencies[i]
+            korzenie[i][i] = i
 
-        # 3. Główny algorytm Programowania Dynamicznego (budujemy coraz szersze poddrzewa)
-        for length in range(2, n + 1):          # 'length' to liczba elementów w poddrzewie
-            for i in range(n - length + 1):     # 'i' to indeks początkowy
-                j = i + length - 1              # 'j' to indeks końcowy
-                costs[i][j] = float('inf')      # Ustawiamy nieskończoność jako koszt startowy
+        # 3. Główny algorytm Programowania Dynamicznego
+        for dlugosc in range(2, n + 1):
+            for i in range(n - dlugosc + 1):
+                j = i + dlugosc - 1
+                koszty[i][j] = float('inf')
 
-                frequencySum = sum(self.frequencies[i:j + 1])
+                suma_czestotliwosci = sum(self.frequencies[i:j + 1])
 
-                # Szukamy, który węzeł 'r' sprawdzi się najlepiej jako korzeń dla tego przedziału
                 for r in range(i, j + 1):
-                    # Zabezpieczenie przed wyjściem poza tablicę dla lewego i prawego dziecka
-                    leftCost = costs[i][r - 1] if r > i else 0
-                    rightCost = costs[r + 1][j] if r < j else 0
+                    koszt_lewy = koszty[i][r - 1] if r > i else 0
+                    koszt_prawy = koszty[r + 1][j] if r < j else 0
 
-                    totalCost = leftCost + rightCost  + frequencySum
+                    calkowity_koszt = koszt_lewy + koszt_prawy + suma_czestotliwosci
 
-                    # Zapisujemy, jeśli znaleźliśmy lepszego kandydata na korzeń
-                    if totalCost < costs[i][j]:
-                        costs[i][j] = totalCost
-                        roots[i][j] = r
+                    if calkowity_koszt < koszty[i][j]:
+                        koszty[i][j] = calkowity_koszt
+                        korzenie[i][j] = r
 
-        # 4. Rekurencyjna budowa fizycznego drzewa na podstawie macierzy korzeni (R)
-        def makeTree(i, j):
+        # 4. Rekurencyjna budowa fizycznego drzewa
+        def zbuduj_drzewo(i, j):
             if i > j:
                 return None
 
-            # Odczytujemy indeks najlepszego korzenia z macierzy
-            r = roots[i][j]
-            node = treeNode(self.itemNames[r], self.frequencies[r])
+            r = korzenie[i][j]
+            wezel = treeNode(self.itemNames[r], self.frequencies[r])
 
-            # Budujemy lewe i prawe poddrzewo
-            node.left = makeTree(i, r - 1)
-            node.right = makeTree(r + 1, j)
+            wezel.left = zbuduj_drzewo(i, r - 1)
+            wezel.right = zbuduj_drzewo(r + 1, j)
 
-            return node
+            return wezel
 
-        self.optimizedTreeRoot = makeTree(0, n - 1)
-
+        self.optimizedTreeRoot = zbuduj_drzewo(0, n - 1)
+        print("\n[SYSTEM] Optymalne drzewo (OBST) zostało pomyślnie wygenerowane!")
 
     def searchOptimizedTree(self, item_name):
-        """Method for searching specific item in optimized binary tree."""
-        curr = self.optimizedTreeRoot
-        steps = 0
+        """Klasyczne poszukiwanie binarne z graficznym podglądem kroków na żywo."""
+        print(f"\n[SYSTEM] Szukam DOKŁADNEGO dopasowania dla: '{item_name}' w drzewie OBST...")
+        print("-" * 55)
 
-        while curr is not None:
-            steps += 1
-            # Jeśli znaleźliśmy dokładny strzał, kończymy
-            if curr.itemName == item_name:
-                return curr, steps
+        obecny = self.optimizedTreeRoot
+        kroki = 0
 
-            # Własność BST: Odrzucamy połowę drzewa przy każdym kroku!
-            elif item_name < curr.itemName:
-                curr = curr.left
+        while obecny is not None:
+            kroki += 1
+            print(f" Krok {kroki}: Sprawdzam węzeł -> {obecny.itemName}")
+
+            # 1. Znalazł dokładnie to, czego szukał
+            if obecny.itemName == item_name:
+                print(f"  >>> BINGO! Znalazłem '{obecny.itemName}'. Koniec szukania!")
+                print("-" * 55)
+                print("\n--- WYNIKI WYSZUKIWANIA OBST ---")
+                print(f"Nazwa skina: {obecny.itemName}")
+                print(f"Popularność: {obecny.frequency}")
+                print(f"Zlokalizowano w zaledwie: {kroki} krokach! (Odrzucanie gałęzi)")
+                print("--------------------------------")
+                return obecny, kroki
+
+            # 2. Szukana nazwa jest mniejsza alfabetycznie -> skręcamy w lewo
+            elif item_name < obecny.itemName:
+                print("  --- Skin jest mniejszy alfabetycznie. Odrzucam prawą stronę, skręcam w LEWO.")
+                obecny = obecny.left
+
+            # 3. Szukana nazwa jest większa alfabetycznie -> skręcamy w prawo
             else:
-                curr = curr.right
+                print("  --- Skin jest większy alfabetycznie. Odrzucam lewą stronę, skręcam w PRAWO.")
+                obecny = obecny.right
 
-        # Skina nie ma w bazie
-        return None, steps
-
+        # Jeśli pętla się skończy i nic nie znajdzie
+        print("-" * 55)
+        print(f"  >>> NIE ZNALEZIONO. Dotarto do końca gałęzi po {kroki} krokach.")
+        return None, kroki
 
     def costDifferenceCalculator(self):
         """Calculating difference in cost between using optimized and standard binary tree for searching same item"""
@@ -243,8 +255,12 @@ class steam_market:
         print(convertedTree)
         print("-" * 52)
 
-    def _export_tree_to_png(self, root, file_path, title):
-        """Zapisuje drzewo jako obraz PNG używając matplotlib."""
+    def _export_tree_to_png(self, root, file_path, title, highlight_path_ids=None, highlight_color="#ff6666"):
+        """Zapisuje drzewo jako obraz PNG używając matplotlib.
+
+        highlight_path_ids: optional set of node ids to highlight OR ordered list/tuple of nodes (path)
+        highlight_color: color used for highlighted nodes/edges
+        """
         if root is None:
             raise ValueError("Drzewo jest puste!")
 
@@ -255,6 +271,18 @@ class steam_market:
                 "Do eksportu PNG potrzebny jest pakiet matplotlib. "
                 "Zainstaluj go poleceniem: pip install matplotlib"
             ) from exc
+
+        # If user passed an ordered path (list of nodes), convert to ids and compute edges
+        highlight_edges = set()
+        if isinstance(highlight_path_ids, (list, tuple)):
+            path_nodes = highlight_path_ids
+            path_ids = [id(n) for n in path_nodes]
+            for a, b in zip(path_ids, path_ids[1:]):
+                highlight_edges.add((a, b))
+            highlight_path_ids = set(path_ids)
+
+        if highlight_path_ids is None:
+            highlight_path_ids = set()
 
         positions = {}
         labels = {}
@@ -270,6 +298,8 @@ class steam_market:
             x_counter[0] += 1
             assign_positions(node.right, depth + 1)
 
+        assign_positions(root)
+
         def draw_edges(ax, node):
             if node is None:
                 return
@@ -279,7 +309,16 @@ class steam_market:
                 if child is None:
                     continue
                 child_x, child_y = positions[id(child)]
-                ax.plot([x, child_x], [y, child_y], color="#666666", linewidth=1.2, zorder=1)
+                pair = (id(node), id(child))
+                if pair in highlight_edges:
+                    color = highlight_color
+                    lw = 2.6
+                    z = 2
+                else:
+                    color = "#666666"
+                    lw = 1.2
+                    z = 1
+                ax.plot([x, child_x], [y, child_y], color=color, linewidth=lw, zorder=z)
                 draw_edges(ax, child)
 
         def draw_nodes(ax, node):
@@ -287,20 +326,32 @@ class steam_market:
                 return
 
             x, y = positions[id(node)]
-            ax.scatter([x], [y], s=1800, color="#cfe8ff", edgecolors="#2b6cb0", linewidths=1.5, zorder=2)
+            nid = id(node)
+            if nid in highlight_path_ids:
+                node_color = highlight_color
+                edge_color = "#333333"
+                size = 2400
+                text_color = "white"
+            else:
+                node_color = "#cfe8ff"
+                edge_color = "#2b6cb0"
+                size = 1800
+                text_color = "black"
+
+            ax.scatter([x], [y], s=size, color=node_color, edgecolors=edge_color, linewidths=1.5, zorder=3)
             ax.text(
                 x,
                 y,
-                labels[id(node)],
+                labels[nid],
                 ha="center",
                 va="center",
                 fontsize=9,
-                zorder=3,
+                zorder=4,
+                color=text_color,
             )
             draw_nodes(ax, node.left)
             draw_nodes(ax, node.right)
 
-        assign_positions(root)
 
         height = self._tree_height(root)
         width = max(6, x_counter[0] * 1.2)
@@ -323,10 +374,46 @@ class steam_market:
             return 0
         return 1 + max(self._tree_height(node.left), self._tree_height(node.right))
 
-    def exportBasicTreeToPng(self, file_path="basic_tree.png"):
-        """Eksportuje główne drzewo do pliku PNG."""
-        self._export_tree_to_png(self.basicTreeRoot, file_path, "Basic binary tree")
+    def get_search_path_basic(self, item_name):
+        """Wykonuje wyszukiwanie w podstawowym drzewie (BST) i zwraca listę odwiedzonych węzłów (kolejność)."""
+        path = []
+        curr = self.basicTreeRoot
+        while curr is not None:
+            path.append(curr)
+            if curr.itemName == item_name:
+                return path, True
+            if item_name < curr.itemName:
+                curr = curr.left
+            else:
+                curr = curr.right
+        return path, False
 
-    def exportOptimizedTreeToPng(self, file_path="optimized_tree.png"):
-        """Eksportuje zoptymalizowane drzewo do pliku PNG."""
-        self._export_tree_to_png(self.optimizedTreeRoot, file_path, "Optimized binary tree")
+    def exportBasicTreeToPng(self, file_path="basic_tree.png", item_name=None):
+        """Eksportuje główne drzewo do pliku PNG. Jeśli podano item_name, podświetla ścieżkę wyszukiwania na czerwono."""
+        highlight = None
+        if item_name is not None:
+            path, found = self.get_search_path_basic(item_name)
+            highlight = path
+        self._export_tree_to_png(self.basicTreeRoot, file_path, "Basic binary tree", highlight_path_ids=highlight, highlight_color="#ff6666")
+
+    def get_search_path_optimized(self, item_name):
+        """Wykonuje wyszukiwanie w zoptymalizowanym drzewie (BST) i zwraca listę odwiedzonych węzłów (kolejność)."""
+        path = []
+        curr = self.optimizedTreeRoot
+        while curr is not None:
+            path.append(curr)
+            if curr.itemName == item_name:
+                return path, True
+            if item_name < curr.itemName:
+                curr = curr.left
+            else:
+                curr = curr.right
+        return path, False
+
+    def exportOptimizedTreeToPng(self, file_path="optimized_tree.png", item_name=None):
+        """Eksportuje zoptymalizowane drzewo do pliku PNG. Jeśli podano item_name, podświetla ścieżkę wyszukiwania na zielono."""
+        highlight = None
+        if item_name is not None:
+            path, found = self.get_search_path_optimized(item_name)
+            highlight = path
+        self._export_tree_to_png(self.optimizedTreeRoot, file_path, "Optimized binary tree", highlight_path_ids=highlight, highlight_color="#66cc66")
