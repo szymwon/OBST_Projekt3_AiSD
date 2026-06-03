@@ -210,10 +210,32 @@ class steam_market:
         print(f"  >>> NIE ZNALEZIONO. Dotarto do końca gałęzi po {kroki} krokach.")
         return None, kroki
 
-    def costDifferenceCalculator(self):
+    # def costDifferenceCalculator(self):
         """Calculating difference in cost between using optimized and standard binary tree for searching same item"""
 
-        pass
+        # pass
+
+    def costDifferenceCalculator(self):
+        """Oblicza i porównuje oczekiwany koszt całkowity struktur BST i OBST."""
+        def oblicz_koszt_drzewa(node, poziom=1):
+            if node is None:
+                return 0
+            obecny_koszt = poziom * node.frequency
+            koszt_lewy = oblicz_koszt_drzewa(node.left, poziom + 1)
+            koszt_prawy = oblicz_koszt_drzewa(node.right, poziom + 1)
+            return obecny_koszt + koszt_lewy + koszt_prawy
+
+        koszt_zwykle = oblicz_koszt_drzewa(self.basicTreeRoot)
+        koszt_optymalne = oblicz_koszt_drzewa(self.optimizedTreeRoot)
+
+        print("\n" + "=" * 65)
+        print(" PORÓWNANIE WYDAJNOŚCI STRUKTUR (Całkowity Oczekiwany Koszt)")
+        print("=" * 65)
+        print(f" Koszt podstawowego drzewa BST:   {koszt_zwykle}")
+        print(f" Koszt zoptymalizowanego OBST:    {koszt_optymalne}")
+        print("-" * 65)
+        print(f" Zaoszczędzone operacje serwera:  {koszt_zwykle - koszt_optymalne} jednostek!")
+        print("=" * 65)
 
     def _convert_to_library_node(self, current_node):
         """Konwertuje nasze węzły na obiekty Node z biblioteki binarytree."""
