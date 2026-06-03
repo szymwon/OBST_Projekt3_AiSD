@@ -4,7 +4,7 @@ from steam_market_classes import *
 #tworzenie obiektu
 market = steam_market()
 #ladowanie pliku do obiektu
-market.loadFile("przyklad_degeneracji.csv")
+market.loadFile("items_copy.csv")
 
 #tworzenie drzew: binarnego i zwyklego
 # print()

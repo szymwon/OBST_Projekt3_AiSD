@@ -82,28 +82,28 @@ class steam_market:
         obecny = self.basicTreeRoot
         kroki = 0
         found = []
-        path = []
+        path = []  # <--- Dodana lista na odwiedzane węzły (potrzebna do obrazka PNG)
 
         print(f"\n[SYSTEM] Wyszukiwanie binarne dla frazy: '{phrase}'")
         print("-" * 55)
 
         while obecny is not None:
             kroki += 1
-            path.append(obecny)
+            path.append(obecny)  # <--- Zapisujemy węzeł do ścieżki
             print(f" Krok {kroki}: Sprawdzam węzeł -> {obecny.itemName}")
 
-
+            # 1. Dokładne dopasowanie węzła i wpisanej frazy
             if searched_phrase == obecny.itemName:
                 print(f"  >>> SUKCES! Znaleziono '{obecny.itemName}'.")
                 found.append((obecny.itemName, obecny.frequency, kroki))
                 break
 
-
+            # 2. Fraza jest mniejsza alfabetycznie -> skręcamy w lewo
             elif searched_phrase < obecny.itemName:
                 print("  --- Fraza mniejsza alfabetycznie. Skręcam w LEWO.")
                 obecny = obecny.left
 
-
+            # 3. Fraza jest większa alfabetycznie -> skręcamy w prawo
             else:
                 print("  --- Fraza większa alfabetycznie. Skręcam w PRAWO.")
                 obecny = obecny.right
@@ -120,6 +120,7 @@ class steam_market:
             print(f"Zlokalizowano w kroku nr: {item[2]}")
             print("---------------------------")
 
+        # <--- Zwracamy dokładnie 3 wartości, o które prosi plik główny
         return found, kroki, path
 
     def optimizedBinaryTree(self):
@@ -128,13 +129,16 @@ class steam_market:
         if n == 0:
             return
 
+        # 1. Tworzymy puste macierze na koszty (C) i korzenie (R)
         koszty = [[0] * n for _ in range(n)]
         korzenie = [[0] * n for _ in range(n)]
 
+        # 2. Baza DP: Wypełniamy przekątną (drzewa 1-elementowe)
         for i in range(n):
             koszty[i][i] = self.frequencies[i]
             korzenie[i][i] = i
 
+        # 3. Główny algorytm Programowania Dynamicznego
         for dlugosc in range(2, n + 1):
             for i in range(n - dlugosc + 1):
                 j = i + dlugosc - 1
@@ -152,6 +156,7 @@ class steam_market:
                         koszty[i][j] = calkowity_koszt
                         korzenie[i][j] = r
 
+        # 4. Rekurencyjna budowa fizycznego drzewa
         def zbuduj_drzewo(i, j):
             if i > j:
                 return None
@@ -179,6 +184,7 @@ class steam_market:
             kroki += 1
             print(f" Krok {kroki}: Sprawdzam węzeł -> {obecny.itemName}")
 
+            # 1. Znalazł dokładnie to, czego szukał
             if obecny.itemName == item_name:
                 print(f"  >>> SUKCES! Znaleziono '{obecny.itemName}'.")
                 print("-" * 55)
@@ -189,48 +195,36 @@ class steam_market:
                 print("--------------------------------")
                 return obecny, kroki
 
+            # 2. Szukana nazwa jest mniejsza alfabetycznie -> skręcamy w lewo
             elif item_name < obecny.itemName:
                 print("  --- Fraza mniejsza alfabetycznie. Skręcam w LEWO.")
                 obecny = obecny.left
 
+            # 3. Szukana nazwa jest większa alfabetycznie -> skręcamy w prawo
             else:
                 print("  --- Fraza jest większa alfabetycznie. Skręcam w PRAWO.")
                 obecny = obecny.right
 
+        # Jeśli pętla się skończy i nic nie znajdzie
         print("-" * 55)
         print(f"  >>> NIE ZNALEZIONO. Dotarto do końca gałęzi po {kroki} krokach.")
         return None, kroki
 
-
     def costDifferenceCalculator(self):
-        """Oblicza i porównuje oczekiwany koszt całkowity struktur BST i OBST."""
-        def oblicz_koszt_drzewa(node, poziom=1):
-            if node is None:
-                return 0
-            obecny_koszt = poziom * node.frequency
-            koszt_lewy = oblicz_koszt_drzewa(node.left, poziom + 1)
-            koszt_prawy = oblicz_koszt_drzewa(node.right, poziom + 1)
-            return obecny_koszt + koszt_lewy + koszt_prawy
+        """Calculating difference in cost between using optimized and standard binary tree for searching same item"""
 
-        koszt_zwykle = oblicz_koszt_drzewa(self.basicTreeRoot)
-        koszt_optymalne = oblicz_koszt_drzewa(self.optimizedTreeRoot)
-
-        print("\n" + "=" * 65)
-        print(" PORÓWNANIE WYDAJNOŚCI STRUKTUR (Całkowity Oczekiwany Koszt)")
-        print("=" * 65)
-        print(f" Koszt podstawowego drzewa BST:   {koszt_zwykle}")
-        print(f" Koszt zoptymalizowanego OBST:    {koszt_optymalne}")
-        print("-" * 65)
-        print(f" Zaoszczędzone operacje serwera:  {koszt_zwykle - koszt_optymalne} jednostek!")
-        print("=" * 65)
+        pass
 
     def _convert_to_library_node(self, current_node):
         """Konwertuje nasze węzły na obiekty Node z biblioteki binarytree."""
         if current_node is None:
             return None
 
+        # Tworzymy węzeł z biblioteki. Wrzucamy do niego nazwę i częstotliwość.
+        # (W starszych wersjach biblioteki może być wymagana sama liczba, wtedy wpisz tu tylko current_node.frequency)
         lib_node = Node(f"{current_node.itemName} ({current_node.frequency})")
 
+        # Rekurencyjnie tłumaczymy lewą i prawą gałąź
         lib_node.left = self._convert_to_library_node(current_node.left)
         lib_node.right = self._convert_to_library_node(current_node.right)
 
@@ -255,6 +249,7 @@ class steam_market:
 
         print("\nWIZUALIZACJA ZOPTYMALIZOWANEGO DRZEWA (OBST):")
 
+        # Używamy tego samego tłumacza, ale przekazujemy mu KORZEŃ OBST!
         convertedTree = self._convert_to_library_node(self.optimizedTreeRoot)
 
         print(convertedTree)
