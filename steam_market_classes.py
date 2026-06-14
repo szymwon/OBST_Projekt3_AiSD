@@ -2,7 +2,8 @@
 from binarytree import Node
 
 class treeNode:
-    def __init__(self, itemName, frequency):
+    def __init__(self, itemName: str, frequency: int) -> None:
+        """Initializing method"""
         self.itemName = itemName
         self.frequency = frequency
         self.left = None
@@ -70,6 +71,7 @@ class steam_market:
             self.wholeList = [(self.itemNames[i], self.frequencies[i]) for i in range(self.listLength)]
 
         self.basicTreeRoot = balancedTree(self.wholeList)
+        print("\nDRZEWO BST ZOSTALO WYGENEROWANE")
 
 
     def searchPhrase(self, phrase):
@@ -165,7 +167,7 @@ class steam_market:
             return wezel
 
         self.optimizedTreeRoot = zbuduj_drzewo(0, n - 1)
-        print("\n[SYSTEM] Optymalne drzewo (OBST) zostało pomyślnie wygenerowane!")
+        print("`DRZEWO OBST ZOSTALO WYGENEROWANE \n")
 
     def searchOptimizedTree(self, item_name):
         """Klasyczne poszukiwanie binarne z graficznym podglądem kroków na żywo."""
