@@ -1,0 +1,1 @@
+Projekt na zaliczenie z Algorytmów i Struktur Danych polegający na zaimplementowaniu **Zoptymalizowanego Binarnego Drzewa Poszukiwań (OBST)** i zestawieniu go ze **Zwykłym Binarnym Drzewem Poszukiwań (BST)**
